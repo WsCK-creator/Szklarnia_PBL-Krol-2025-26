@@ -1,5 +1,4 @@
-#ifndef ENKODER_H
-#define ENKODER_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -9,9 +8,9 @@
 #define BUTTON_DEBOUNCE_DELAY 200 //ms
 
 // Wskaźnik na funkcję wywoływaną bez argumentów (np. naciśnięcie przycisku)
-typedef void (*CallbackFunction)();
+using EnkoderCallback = void (*)();
 // Wskaźnik na funkcję wywoływaną z argumentem pozycji enkodera
-typedef void (*CallbackWithArg)(int);
+using EnkoderCallbackWithArg = void (*)(int);
 
 /**
  * Klasa obsługująca enkoder (rotary encoder) z przyciskiem.
@@ -28,9 +27,9 @@ private:
     /** Wskaźnik na jedyną instancję używaną przez statyczne ISRy */
     static Enkoder* _instance;
     /** Callback wywoływany przy naciśnięciu przycisku */
-    CallbackFunction _btPresed = nullptr;
+    EnkoderCallback _btPresed = nullptr;
     /** Callback wywoływany po obrocie enkodera, z aktualną pozycją */
-    CallbackWithArg _encTurned = nullptr;
+    EnkoderCallbackWithArg _encTurned = nullptr;
     /** Pin sygnału CLK (kanał A) */
     unsigned char _pin_CLK;
     /** Pin sygnału DT (kanał B) */
@@ -55,7 +54,7 @@ private:
      */
     void doButton()
     {
-        if(millis() - _lastBtnPress > BUTTON_DEBOUNCE_DELAY || _lastBtnPress == 0)
+        if(millis() - _lastBtnPress >= BUTTON_DEBOUNCE_DELAY || _lastBtnPress == 0)
         {
             _lastBtnPress = millis();
             _btnChanged = true;
@@ -69,7 +68,7 @@ private:
      */
     void doEncoder()
     {
-        if(millis() - _lastEncChange > ENKODER_TIMEOUT) _position = 0;
+        if(millis() - _lastEncChange >= ENKODER_TIMEOUT) _position = 0;
         if (digitalRead(_pin_CLK) != digitalRead(_pin_DT)) {
             _position++; // Obrót w prawo
         } else {
@@ -128,7 +127,7 @@ public:
      * @param btPresed  Callback dla naciśnięcia przycisku
      * @param encTurned Callback dla obrotu (otrzymuje bieżącą pozycję)
      */
-    void Init(CallbackFunction btPresed, CallbackWithArg encTurned)
+    void Init(EnkoderCallback btPresed, EnkoderCallbackWithArg encTurned)
     {
         _btPresed = btPresed;
         _encTurned = encTurned;
@@ -173,5 +172,3 @@ public:
 
 // Definition of the static instance pointer
 Enkoder* Enkoder::_instance = nullptr;
-
-#endif // ENKODER_H
