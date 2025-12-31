@@ -1,11 +1,15 @@
 #include <Arduino.h>
-#include "Enkoder.hpp"
-#include "DHT.h"
-#include "SoilSensor.hpp"
-#include "SoilSensorState.hpp"
-#include "DHTSensor.hpp"
-#include "virtuabotixRTC.h"
 #include <avr/wdt.h>
+
+#include "Enkoder.hpp"
+#include "SoilSensor.hpp"
+#include "DHTSensor.hpp"
+#include "WaterLevelSensor.hpp"
+#include "Relays.hpp"
+#include "virtuabotixRTC.h"
+#include "Light.hpp"
+#include "Processor.hpp"
+#include "Disp.hpp"
 
 #define ENCODER_CLK_PIN 3
 #define ENCODER_DT_PIN 34
@@ -19,45 +23,31 @@
 #define LED_R_PIN 41
 #define LED_G_PIN 39
 #define LED_B_PIN 40
-#define RELAY_ACTUATOR_PIN 46
-#define RELAY_DIRECTION_PIN 45
-#define RELAY_PUMP_PIN 44
-#define RELAY_LED_PIN 43
-#define RELAY_HEATER_PIN 42
+#define LIGHT_SENSOR_PIN A3
+#define RTC_CLK 38
+#define RTC_DAT 37
+#define RTC_RST 36
+#define OLED_MOSI 52
+#define OLED_SCK 51
+#define OLED_CS 49
+#define OLED_DC 48
+#define OLED_RES 47
 
 #define RESET_TIME 2592000000
 
 
 Enkoder enkoder(ENCODER_CLK_PIN, ENCODER_DT_PIN, ENCODER_SW_PIN);
-SoilSensor soilSensor1(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_1_PIN);
-SoilSensor soilSensor2(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_2_PIN);
-SoilSensor soilSensor3(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_3_PIN);
+SoilSensor soilSensor1(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_1_PIN, 1);
+SoilSensor soilSensor2(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_2_PIN, 2);
+SoilSensor soilSensor3(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_3_PIN, 3);
 DHTSensor dhtIn(DTH11_IN_PIN);
 DHTSensor dhtOut(DTH11_OUT_PIN);
-
-
-void encBtPressed() {
-  // Handle button press
-}
-void encTurned(int position) {
-  // Handle encoder turn
-}
-void soilSensor1Change(SoilSensorState){
-
-}
-void soilSensor2Change(SoilSensorState){
-
-}
-void soilSensor3Change(SoilSensorState){
-
-}
-
-void dhtInChange(float temp, float hum){
-
-}
-void dhtOutChange(float temp, float hum){
-  
-}
+WaterLevelSensor waterLevelSensor;
+Relays relays;
+virtuabotixRTC myRTC(RTC_CLK, RTC_DAT, RTC_RST);
+Disp disp(OLED_CS, OLED_RES, OLED_DC);
+Light light(LIGHT_SENSOR_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN);
+Processor processor;
 
 void checkTimeOverflow(){
   if (millis() > RESET_TIME)
@@ -67,14 +57,18 @@ void checkTimeOverflow(){
   }
 }
 
-
 void setup() {
-  enkoder.Init(encBtPressed, encTurned);
-  soilSensor1.Init(soilSensor1Change);
-  soilSensor2.Init(soilSensor2Change);
-  soilSensor3.Init(soilSensor3Change);
-  dhtIn.Init(dhtInChange);
-  dhtOut.Init(dhtOutChange);
+  enkoder.Init();
+  soilSensor1.Init();
+  soilSensor2.Init();
+  soilSensor3.Init();
+  waterLevelSensor.Init();
+  dhtIn.Init();
+  dhtOut.Init();
+  relays.Init();
+  disp.Init(&dhtIn, &dhtOut, &soilSensor1, &soilSensor2, &soilSensor3, &waterLevelSensor, &light, &relays, &enkoder, &myRTC, &processor);
+  light.Init();
+  processor.Init(&dhtIn, &dhtOut, &soilSensor1, &soilSensor2, &soilSensor3, &waterLevelSensor, &light, &relays);
 }
 
 void loop() {
@@ -82,8 +76,13 @@ void loop() {
   soilSensor1.readSensor();
   soilSensor2.readSensor();
   soilSensor3.readSensor();
+  waterLevelSensor.readSensor();
   dhtIn.readSensor();
   dhtOut.readSensor();
+  relays.update();
+  light.update();
+  processor.update();
+  disp.update();
 
-  checkTimeOverflow();
+  checkTimeOverflow(); //TODO: zmienić na wykorzystaniem myRTC
 }

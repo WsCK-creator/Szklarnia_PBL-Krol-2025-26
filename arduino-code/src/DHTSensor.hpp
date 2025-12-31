@@ -1,37 +1,50 @@
 #pragma once
 
-#include <Arduino.h>
-#include "DHT.h"
-#include <utility>
+#include<ArduinoSTL.h>
+#include<DHT.h>
 
-using DHTCallback = void (*)(float, float);
+#include "DataTypes.hpp"
 
+using DHTCallback = void (*)(const void*, const float*, const float*);
 
 class DHTSensor
 {
 private:
-    unsigned long _last_read = 0;
-    unsigned short _read_delay = 2000; //ms
-    float _temperature = 0.0;
-    float _humidity = 0.0;
+    const ConfigUShort delay_cf = {wrapperReadDelay, 100, 60000, 50, "ms"};
 
+    unsigned long _last_read = 0;
+    unsigned short _read_delay = 10000; //ms
+    float _temperature = 0.0; 
+    float _humidity = 0.0;
+    
     DHT _dht;
-    DHTCallback _callback = nullptr;
+    //DHTCallback _callback = nullptr;
+    std::vector<std::pair<const void*, DHTCallback>> _callbacks;
     
 public:
+    const DataConfig delayConfig = {TYPE_USHORT, {.confUShort = &delay_cf}};
+
     DHTSensor(unsigned char pin);
-    void Init(DHTCallback valueChagedCallback);
+    void addCallback(const void* context, DHTCallback valueChagedCallback);
+    void Init();
     void readSensor();
-    unsigned short getReadDelay();
-    void setReadDelay(unsigned short delay);
+
+    unsigned short readDelay(const unsigned short* delay);
     std::pair<float, float> getLastData();
+
+    static unsigned short wrapperReadDelay(const void* context, const unsigned short* delay);
+    //static std::pair<float, float> wrapperGetLastData()
 };
 
 DHTSensor::DHTSensor(unsigned char pin) : _dht(pin, DHT11) {}
 
-inline void DHTSensor::Init(DHTCallback valueChagedCallback) 
+inline void DHTSensor::addCallback(const void* context, DHTCallback valueChagedCallback)
+{
+    _callbacks.push_back(std::make_pair(context, valueChagedCallback));
+}
+
+inline void DHTSensor::Init() 
 { 
-    _callback = valueChagedCallback;
     _dht.begin(); 
 }
 
@@ -53,14 +66,31 @@ inline void DHTSensor::readSensor()
             _humidity = value;
         }
 
-        if(check && _callback) 
-            _callback(_temperature, _humidity);
+        if(check) 
+            for (const auto& callback : _callbacks)
+                {
+                    callback.second(callback.first, &_temperature, &_humidity);
+                }
+                
         _last_read = millis();
     }
 }
 
-inline unsigned short DHTSensor::getReadDelay() { return _read_delay; }
+inline unsigned short DHTSensor::readDelay(const unsigned short *delay)
+{
+    if(delay)
+    {
+        _read_delay = *delay;
+        return 0;
+    }
+    return _read_delay;
+}
 
-inline void DHTSensor::setReadDelay(unsigned short delay) { _read_delay = delay; }
+unsigned short DHTSensor::wrapperReadDelay(const void* context, const unsigned short *delay)
+{
+    DHTSensor* obj = (DHTSensor*)context;
+
+    return obj->readDelay(delay);
+}
 
 inline std::pair<float, float> DHTSensor::getLastData() { return std::make_pair(_temperature, _humidity); }
