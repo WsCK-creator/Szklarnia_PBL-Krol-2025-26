@@ -303,28 +303,14 @@ void Disp::_screen3_Soil()
     // Rysujemy 3 słupki obok siebie
     // Pozycje X dla słupków: 15, 55, 95
 
-    // --- SONDA 1 ---
-    u8g2.drawFrame(15, 20, 20, 50); // Ramka
-    int h1 = (_soil_state[0] == 0) ? 5 : (_soil_state[0] == 1) ? 25
-                                               : 46; // Wysokość wypełnienia
-    u8g2.drawBox(17, (70 - h1), 16, h1);             // Wypełnienie od dołu
-    u8g2.setFont(u8g2_font_helvR08_tr);
-    u8g2.drawStr(18, 82, "CZ 1"); // Podpis
-
-    // --- SONDA 2 ---
-    u8g2.drawFrame(55, 20, 20, 50);
-    int h2 = (_soil_state[1] == 0) ? 5 : (_soil_state[1] == 1) ? 25
-                                               : 46;
-    u8g2.drawBox(57, (70 - h2), 16, h2);
-    u8g2.drawStr(58, 82, "CZ 2");
-
-    // --- SONDA 3 ---
-    u8g2.drawFrame(95, 20, 20, 50);
-    int h3 = (_soil_state[2] == 0) ? 5 : (_soil_state[2] == 1) ? 25
-                                               : 46;
-    u8g2.drawBox(97, (70 - h3), 16, h3);
-    u8g2.drawStr(98, 82, "CZ 3");
-
+    for (unsigned char i = 0; i < 3; i++)
+    {
+        u8g2.drawFrame(15 + 40 * i, 20, 20, 50); // Ramka
+        int h = (_soil_state[i] <= 250) ? 5 : (_soil_state[i] <= 290) ? 25 : 46; // Wysokość wypełnienia
+        u8g2.drawBox(17 + 40 * i, (70 - h), 16, h);             // Wypełnienie od dołu
+        u8g2.setFont(u8g2_font_helvR08_tr);
+        u8g2.drawStr(18 + 40 * i, 82, ("CZ " + String(i + 1)).c_str()); // Podpis
+    }
     // Legenda na samym dole (opcjonalnie)
     // u8g2.setFont(u8g2_font_u8glib_4_tf); // Bardzo mała czcionka (micro)
     // u8g2.drawStr(15, 95, "MIN          MED          MAX");
@@ -738,13 +724,20 @@ void Disp::_changeSrc7(const Direction *direction, const int *position)
             str += _curentConfig->ptr.confEnum->options[(int)_value];
             break;
     }
-    _screen7_SimpleEditor(str);
+    u8g2.firstPage();
+    do
+    {
+        _screen7_SimpleEditor(str);
+    } while (u8g2.nextPage());
+    _last_switch_time = millis();
+    
     if(_manual_mode) _saveConfig();
 }
 
 void Disp::_encPressed()
 {
     _blanking_start = millis();
+    u8g2.setContrast(_brightness);
     if (!_curentItem)
     {
         _screen_num = 6;
@@ -779,6 +772,7 @@ void Disp::_encPressed()
 void Disp::_encTurned(const Direction *direction, const int *position)
 {
     _blanking_start = millis();
+    u8g2.setContrast(_brightness);
     if (!_curentItem)
     {
         _turned = true;
@@ -819,7 +813,7 @@ inline void Disp::_setDHTOut(const float *temp, const float *hum)
 
 inline void Disp::_setSoil(const unsigned char *chr, const SoilSensorState *state)
 {
-    _soil_state[*chr] = *state;
+    _soil_state[*chr - 1] = *state;
 }
 
 inline void Disp::_setWater(const unsigned char *level)
