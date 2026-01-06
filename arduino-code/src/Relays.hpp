@@ -91,8 +91,8 @@ inline void Relays::_run_actuator(ActuatorDirection mode)
 
 inline void Relays::_stop_actuator()
 {
-    digitalWrite(RELAY_ACTUATOR_PIN, false);
-    digitalWrite(RELAY_DIRECTION_PIN, false);
+    digitalWrite(RELAY_ACTUATOR_PIN, !false);
+    digitalWrite(RELAY_DIRECTION_PIN, !false);
     _delay = _realy_delay;
     _current_actuator_state = FINISHED;
     _toCall = true;
@@ -124,11 +124,12 @@ inline void Relays::Init()
     pinMode(RELAY_PUMP_PIN, OUTPUT);
     pinMode(RELAY_LED_PIN, OUTPUT);
     pinMode(RELAY_HEATER_PIN, OUTPUT);
-    digitalWrite(RELAY_ACTUATOR_PIN, false);
-    digitalWrite(RELAY_DIRECTION_PIN, false);
-    digitalWrite(RELAY_PUMP_PIN, false);
-    digitalWrite(RELAY_LED_PIN, false);
-    digitalWrite(RELAY_HEATER_PIN, false);
+    digitalWrite(RELAY_ACTUATOR_PIN, !false);
+    digitalWrite(RELAY_DIRECTION_PIN, !false);
+    digitalWrite(RELAY_PUMP_PIN, !false);
+    digitalWrite(RELAY_LED_PIN, !false);
+    digitalWrite(RELAY_HEATER_PIN, !false);
+    Serial.println("Relays initialized");
 }
 
 void Relays::update()
@@ -141,23 +142,23 @@ void Relays::update()
             _actuator_state = (_actuator_state == OPEN) ? FINISHED_OPEN : FINISHED_CLOSE;
             _toCall = true;
         }
-        else if(digitalRead(RELAY_ACTUATOR_PIN)) //is motor running
+        else if(!digitalRead(RELAY_ACTUATOR_PIN)) //is motor running
         {
-            digitalWrite(RELAY_ACTUATOR_PIN, false);
+            digitalWrite(RELAY_ACTUATOR_PIN, !false);
             _delay = _realy_delay;
             _toCall = true;
         }
         else
         {
-            if(digitalRead(RELAY_DIRECTION_PIN) !=  _actuator_state)
+            if((!digitalRead(RELAY_DIRECTION_PIN)) !=  _actuator_state)
             {
-                digitalWrite(RELAY_DIRECTION_PIN,  _actuator_state);
+                digitalWrite(RELAY_DIRECTION_PIN,  !_actuator_state);
                 _delay = _realy_delay;
                 _toCall = true;
             }
             else
             {
-                digitalWrite(RELAY_ACTUATOR_PIN, true);
+                digitalWrite(RELAY_ACTUATOR_PIN, !true);
                 _delay = _relay_off_delay * 60 * 1000;
                 _current_actuator_state = _actuator_state;
                 _toCall = true;
@@ -188,7 +189,7 @@ inline bool Relays::led(const bool* check)
 {
     if(check) {
         if(_led_state != *check) {
-            digitalWrite(RELAY_LED_PIN, *check);
+            digitalWrite(RELAY_LED_PIN, !*check);
             _led_state = *check;
             _toCall = true;
         }
@@ -200,7 +201,7 @@ inline bool Relays::heater(const bool* check)
 {
     if(check)
         if(_heater_state != *check){
-            digitalWrite(RELAY_HEATER_PIN, *check);
+            digitalWrite(RELAY_HEATER_PIN, !*check);
             _heater_state = *check;
             _toCall = true;
         }
@@ -212,7 +213,7 @@ inline bool Relays::pump(const bool* check)
 {
     if (check)
         if(_pump_state != *check){
-            digitalWrite(RELAY_PUMP_PIN, *check);
+            digitalWrite(RELAY_PUMP_PIN, !*check);
             _pump_state = *check;
             _toCall = true;
         }

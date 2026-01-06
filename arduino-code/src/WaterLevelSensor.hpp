@@ -50,9 +50,7 @@ inline void WaterLevelSensor::getHigh12SectionValue()
     memset(_high_data, 0, sizeof(_high_data));
     Wire.requestFrom(ATTINY1_HIGH_ADDR, 12);
     while (12 != Wire.available());
-
-    for (unsigned char i = 0; i < 12; i++) _high_data[i] = Wire.read();
-    
+    for (unsigned char i = 0; i < 12; i++) {_high_data[i] = Wire.read();}
 }
 
 inline void WaterLevelSensor::getLow8SectionValue()
@@ -60,8 +58,8 @@ inline void WaterLevelSensor::getLow8SectionValue()
     memset(_low_data, 0, sizeof(_low_data));
     Wire.requestFrom(ATTINY2_LOW_ADDR, 8);
     while (8 != Wire.available());
-
-    for (unsigned char i = 0; i < 8 ; i++) _low_data[i] = Wire.read();
+    for (unsigned char i = 0; i < 8 ; i++) {_low_data[i] = Wire.read();}
+    
 }
 
 WaterLevelSensor::WaterLevelSensor() {}
