@@ -10,6 +10,7 @@
 #include "Light.hpp"
 #include "Processor.hpp"
 #include "Disp.hpp"
+#include "InfluxSender.hpp"
 
 #define ENCODER_CLK_PIN 3
 #define ENCODER_DT_PIN 34
@@ -27,12 +28,18 @@
 #define RTC_CLK 38
 #define RTC_DAT 37
 #define RTC_RST 36
-#define OLED_MOSI 52
-#define OLED_SCK 51
-#define OLED_CS 49
+#define OLED_MOSI 51
+#define OLED_SCK 52
+#define OLED_CS 53
 #define OLED_DC 48
-#define OLED_RES 47
-
+#define OLED_RES 49
+#define INFLUX_SSID "ssid"
+#define INFLUX_PASSWORD "password"
+#define INFLUX_HOST "192.168.0.100"
+#define INFLUX_PORT 8086
+#define INFLUX_DB_NAME "database_name"
+#define INFLUX_MEASUREMENT "measurement_name"
+#define INFLUX_LOG_PERIOD 10000
 
 
 Enkoder enkoder(ENCODER_CLK_PIN, ENCODER_DT_PIN, ENCODER_SW_PIN);
@@ -47,9 +54,12 @@ virtuabotixRTC myRTC(RTC_CLK, RTC_DAT, RTC_RST);
 Disp disp(OLED_CS, OLED_RES, OLED_DC);
 Light light(LIGHT_SENSOR_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN);
 Processor processor;
+InfluxSender influxSender(INFLUX_SSID, INFLUX_PASSWORD, INFLUX_HOST, INFLUX_PORT, INFLUX_DB_NAME, INFLUX_MEASUREMENT, INFLUX_LOG_PERIOD);
 
 
 void setup() {
+  Serial.begin(115200);
+  Serial1.begin(115200);
   enkoder.Init();
   soilSensor1.Init();
   soilSensor2.Init();
@@ -58,12 +68,14 @@ void setup() {
   dhtIn.Init();
   dhtOut.Init();
   relays.Init();
-  disp.Init(&dhtIn, &dhtOut, &soilSensor1, &soilSensor2, &soilSensor3, &waterLevelSensor, &light, &relays, &enkoder, &myRTC, &processor);
   light.Init();
+  disp.Init(&dhtIn, &dhtOut, &soilSensor1, &soilSensor2, &soilSensor3, &waterLevelSensor, &light, &relays, &enkoder, &myRTC, &processor);
   processor.Init(&dhtIn, &dhtOut, &soilSensor1, &soilSensor2, &soilSensor3, &waterLevelSensor, &light, &relays);
+  influxSender.Init(&Serial1, &dhtIn, &dhtOut, &soilSensor1, &soilSensor2, &soilSensor3, &waterLevelSensor, &light);
 }
 
 void loop() {
+  
   enkoder.loop();
   soilSensor1.readSensor();
   soilSensor2.readSensor();
@@ -75,4 +87,5 @@ void loop() {
   light.update();
   processor.update();
   disp.update();
+  influxSender.Update();
 }
