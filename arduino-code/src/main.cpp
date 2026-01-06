@@ -33,7 +33,6 @@
 #define OLED_DC 48
 #define OLED_RES 47
 
-#define RESET_TIME 2592000000
 
 
 Enkoder enkoder(ENCODER_CLK_PIN, ENCODER_DT_PIN, ENCODER_SW_PIN);
@@ -49,13 +48,6 @@ Disp disp(OLED_CS, OLED_RES, OLED_DC);
 Light light(LIGHT_SENSOR_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN);
 Processor processor;
 
-void checkTimeOverflow(){
-  if (millis() > RESET_TIME)
-  {
-    wdt_enable(WDTO_15MS);
-    while (true) {}
-  }
-}
 
 void setup() {
   enkoder.Init();
@@ -83,6 +75,4 @@ void loop() {
   light.update();
   processor.update();
   disp.update();
-
-  checkTimeOverflow(); //TODO: zmienić na wykorzystaniem myRTC
 }

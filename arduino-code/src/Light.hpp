@@ -59,17 +59,23 @@ void Light::Init()
     digitalWrite(_r_pin, LOW);
     digitalWrite(_g_pin, LOW);
     digitalWrite(_b_pin, LOW);
+    Serial.println("Light sensor initialized");
 }
 
 void Light::update()
 {
-    if(millis() >  _last_read + _read_delay)
+    if(millis() - _last_read >= _read_delay)
     {
-        unsigned char value = (analogRead(_ph_pin) / ADC_STEPS) * V_REF;
-        _light_level = (value * 100) / V_REF;
-        for (const auto& callback : _callbacks)
-        {
-            callback.second(callback.first, &_light_level);
+        unsigned short value = (analogRead(_ph_pin) / ADC_STEPS) * V_REF;
+        unsigned char val = (value * 100) / V_REF;
+        if(val != _light_level){
+            _light_level = val;
+            for (const auto& callback : _callbacks)
+            {
+                callback.second(callback.first, &_light_level);
+            }
+            Serial.print("Light level changed to: ");
+            Serial.println(_light_level);
         }
         _last_read = millis();
     }

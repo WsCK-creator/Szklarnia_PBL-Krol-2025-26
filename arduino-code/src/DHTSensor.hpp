@@ -46,11 +46,12 @@ inline void DHTSensor::addCallback(const void* context, DHTCallback valueChagedC
 inline void DHTSensor::Init() 
 { 
     _dht.begin(); 
+    Serial.print("DHT sensor initialized");
 }
 
 inline void DHTSensor::readSensor()
 {
-    if(millis() > _last_read + _read_delay)
+    if(millis() - _last_read >= _read_delay)
     {
         float value = _dht.readTemperature();
         bool check = false;
@@ -66,11 +67,17 @@ inline void DHTSensor::readSensor()
             _humidity = value;
         }
 
-        if(check) 
+        if(check)
+        {
             for (const auto& callback : _callbacks)
                 {
                     callback.second(callback.first, &_temperature, &_humidity);
                 }
+            Serial.print("DHT sensor data changed. Temp: ");
+            Serial.print(_temperature);
+            Serial.print(" Humidity: ");
+            Serial.println(_humidity);
+        }
                 
         _last_read = millis();
     }

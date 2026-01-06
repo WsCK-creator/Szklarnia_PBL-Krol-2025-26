@@ -105,6 +105,8 @@ void Enkoder::Init()
 
     attachInterrupt(digitalPinToInterrupt(_pin_CLK), Enkoder::_wrapperDoEncoder, CHANGE);
     attachInterrupt(digitalPinToInterrupt(_pin_SW), Enkoder::_wrapperDoButton, FALLING);
+
+    Serial.println("Enkoder initialized");
 }
 
 int Enkoder::getEncPos()
@@ -135,6 +137,8 @@ void Enkoder::loop()
             callback.second(callback.first, &d, &p);
         }
         _position = 0;
+        Serial.print("Encoder turned:");
+        Serial.println(p);
     }   
     if(_btnChanged)
     {
@@ -143,5 +147,6 @@ void Enkoder::loop()
         {
             callback.second(callback.first);
         }
+        Serial.println("Encoder button pressed");
     }
 }

@@ -60,6 +60,10 @@ inline void SoilSensor::setAndCall(SoilSensorState s)
     {
         callback.second(callback.first, &_id, &_soilState);
     }
+    /*Serial.print("Soil sensor ");
+    Serial.print(_id);
+    Serial.print(" state changed to ");
+    Serial.println(_soilState);*/
 }
 
 SoilSensor::SoilSensor(unsigned char enPin, unsigned char sensorPin, unsigned char id)
@@ -78,6 +82,9 @@ inline void SoilSensor::Init()
 {
     pinMode(_enPin, OUTPUT);
     setEN_Pin(false);
+    Serial.print("Soil sensor ");
+    Serial.print(_id);
+    Serial.println(" initialized");
 }
 
 inline unsigned short SoilSensor::readDelay(const unsigned short *delay)
@@ -104,9 +111,9 @@ inline SoilSensorState SoilSensor::getLastState() { return _soilState; }
 
 void SoilSensor::readSensor()
 {
-    if (millis() > _last_read + _read_delay)
+    if (millis() - _last_read >= _read_delay)
     {
-        unsigned char value = (analogRead(_sensorPin) / ADC_STEPS) * V_REF;
+        short value = (analogRead(_sensorPin) / ADC_STEPS) * V_REF;
 
         switch (_soilState)
         {

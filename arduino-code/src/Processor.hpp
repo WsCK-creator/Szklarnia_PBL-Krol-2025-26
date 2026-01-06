@@ -255,6 +255,7 @@ void Processor::Init(DHTSensor* dhtIn, DHTSensor* dhtOut, SoilSensor* soil1, Soi
     _soil[2]->addCallback(this, _wrapperSoilChanged);
     _water->addCallback(this, _wrapperWaterChanged);
     _light->addCallback(this, _wrapperLightChanged);
+    Serial.println("Processor initialized");
 }
 
 void Processor::update()
@@ -270,7 +271,7 @@ void Processor::update()
             _pump_delay = 0;
         }    
     }
-    else if(millis() >= _pump_time + _pump_delay)
+    else if(millis() - _pump_time >= _pump_delay)
     {
         if(_pump_run_interval == 0 || _pump_delay == _pump_run_interval * 1000)
         {
@@ -298,7 +299,7 @@ void Processor::update()
             _led_delay = 0;
         }
     }
-    else if(millis() >= _led_time + _led_delay)
+    else if(millis() - _led_time >= _led_delay)
     {
         if(_led_run_interval == 0 ||_led_delay == _led_run_interval * 60 * 1000)
         {

@@ -68,8 +68,9 @@ WaterLevelSensor::WaterLevelSensor() {}
 
 void WaterLevelSensor::readSensor()
 {
-    if(millis() > _last_read + _read_delay)
+    if(millis() - _last_read >= _read_delay + 10000)
     {
+        Serial.println(_waterLevel);
         unsigned int touch_val = 0;
         unsigned char trig_section = 0;
         getLow8SectionValue();
@@ -99,12 +100,18 @@ void WaterLevelSensor::readSensor()
             {
                 callback.second(callback.first, &_waterLevel);
             }
+            Serial.print("Water level changed to: ");
+            Serial.println(_waterLevel);
         }
         _last_read = millis();
     }
 }
 
-inline void WaterLevelSensor::Init() {}
+inline void WaterLevelSensor::Init() 
+{
+    Wire.begin();
+    Serial.print("Water level sensor initialized");
+}
 
 void WaterLevelSensor::addCallback(const void *context, WaterLevelCallback valueChagedCallback)
 {

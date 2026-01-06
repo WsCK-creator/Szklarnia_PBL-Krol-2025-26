@@ -105,6 +105,14 @@ void Relays::_callCallbacks()
     {
         callback.second(callback.first, &_actuator_state, &_led_state, &_heater_state, &_pump_state);
     }
+    /*Serial.print("Actuator state: ");
+    Serial.print(MODE_STR[_actuator_state + 1]);
+    Serial.print(", LED: ");
+    Serial.print(_led_state);
+    Serial.print(", Heater: ");
+    Serial.print(_heater_state);
+    Serial.print(", Pump: ");
+    Serial.println(_pump_state);*/
 }
 
 Relays::Relays() {}
@@ -125,7 +133,7 @@ inline void Relays::Init()
 
 void Relays::update()
 {
-    if(_actuator_state != _current_actuator_state && millis() > _last_read + _delay)
+    if(_actuator_state != _current_actuator_state && millis() - _last_read >= _delay)
     {
         if(_current_actuator_state == FINISHED) //finishing
         {
@@ -156,7 +164,7 @@ void Relays::update()
             }
         }
     }
-    else if (_delay != 0 && millis() > _last_read + _delay) _stop_actuator();
+    else if (_delay != 0 && millis() - _last_read >= _delay) _stop_actuator();
     if(_toCall) _callCallbacks();
 }
 

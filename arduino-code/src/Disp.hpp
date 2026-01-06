@@ -68,7 +68,7 @@ private:
 
     const DataConfig* _curentConfig = nullptr;
 
-    U8G2_SSD1327_VISIONOX_128X96_2_4W_HW_SPI u8g2;
+    U8G2_SSD1327_VISIONOX_128X96_1_4W_HW_SPI u8g2;
     void _setTime();
     void _showScreen();
     void _showMenu(const MenuItem *item);
@@ -134,8 +134,7 @@ void Disp::_setTime()
 
 void Disp::_showScreen()
 {
-    if (_screen_num == 1)
-        _setTime();
+    if (_screen_num == 1) _setTime();
     u8g2.firstPage();
     do
     {
@@ -855,26 +854,39 @@ void Disp::_wrapperEncTurned(const void *context, const Direction *direction, co
 
 inline void Disp::_wrapperSetDHTIn(const void *context, const float *temp, const float *hum)
 {
+    Disp* obj = (Disp*)context;
+    return obj->_setDHTIn(temp, hum);
 }
 
 inline void Disp::_wrapperSetDHTOut(const void *context, const float *temp, const float *hum)
 {
+    Disp* obj = (Disp*)context;
+    return obj->_setDHTOut(temp, hum);
 }
 
-inline void Disp::_wrapperSetSoil(const void *context, const unsigned char *, const SoilSensorState *state)
+inline void Disp::_wrapperSetSoil(const void *context, const unsigned char *chr, const SoilSensorState *state)
 {
+    Disp* obj = (Disp*)context;
+    return obj->_setSoil(chr, state);
 }
 
-inline void Disp::_wrapperSetWater(const void *context, const unsigned char *level)
+void Disp::_wrapperSetWater(const void *context, const unsigned char *level)
 {
+    Disp* obj = (Disp*)context;
+    obj->_setWater(level);
+    return;
 }
 
 inline void Disp::_wrapperSetLight(const void *context, const unsigned char *level)
 {
+    Disp* obj = (Disp*)context;
+    return obj->_setLight(level);
 }
 
 inline void Disp::_wrapperSetRelays(const void *context, const ActuatorDirection *actuator, const bool *led, const bool *heater, const bool *pump)
 {
+    Disp* obj = (Disp*)context;
+    return obj->_setRelays(actuator, led, heater, pump);
 }
 
 Disp::Disp(unsigned char cs, unsigned char rst, unsigned char dc) : u8g2(U8G2_R0, cs, dc, rst) {}
@@ -905,14 +917,18 @@ void Disp::Init(DHTSensor* dhtIn, DHTSensor* dhtOut, SoilSensor* soil1, SoilSens
     _water->addCallback(this, _wrapperSetWater);
     _light->addCallback(this, _wrapperSetLight);
     _relays->addCallback(this, _wrapperSetRelays);
+    Serial.println("Display initialized.");
 }
 
 void Disp::update()
 {
-    if(millis() > _blanking_start + _blanking_time * 60 * 1000) u8g2.setContrast(_blanking_brightness);
-    else u8g2.setContrast(_brightness);
+    if(millis() - _blanking_start >= _blanking_time * 60 * 1000) {
+        u8g2.setContrast(_blanking_brightness);
+    }
 
-    if (!_curentItem && millis() > _last_switch_time + (_turned) ? _back_to_switching_time * 1000 : _screan_switch_time * 1000)
+    unsigned long requiredDelay = (_turned) ? (1000UL * _back_to_switching_time) : (1000UL * _screan_switch_time);
+
+    if (!_curentItem && (millis() - _last_switch_time > requiredDelay))
     {
         _turned = false;
         _screen_num++;
@@ -920,7 +936,7 @@ void Disp::update()
             _screen_num = 1;
         _showScreen();
     }
-    else if (_curentItem && millis() > _last_switch_time + _back_to_switching_time * 1000)
+    else if (_curentItem && millis() - _last_switch_time >= (1000UL * _back_to_switching_time))
     {
         _screen_num = 1;
         _curentItem = nullptr;
