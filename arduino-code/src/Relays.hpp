@@ -8,6 +8,7 @@
 #define RELAY_PUMP_PIN 44
 #define RELAY_LED_PIN 43
 #define RELAY_HEATER_PIN 42
+#define RELAY_FAN_PIN 31
 
 enum ActuatorDirection{
     UNKNOWN = -1,
@@ -124,16 +125,20 @@ inline void Relays::Init()
     pinMode(RELAY_PUMP_PIN, OUTPUT);
     pinMode(RELAY_LED_PIN, OUTPUT);
     pinMode(RELAY_HEATER_PIN, OUTPUT);
+    pinMode(RELAY_FAN_PIN, OUTPUT);
     digitalWrite(RELAY_ACTUATOR_PIN, !false);
     digitalWrite(RELAY_DIRECTION_PIN, !false);
     digitalWrite(RELAY_PUMP_PIN, !false);
     digitalWrite(RELAY_LED_PIN, !false);
     digitalWrite(RELAY_HEATER_PIN, !false);
+    digitalWrite(RELAY_FAN_PIN, false);
     Serial.println("Relays initialized");
 }
 
 void Relays::update()
 {
+    digitalWrite(RELAY_FAN_PIN, (_actuator_state == OPEN || _actuator_state == FINISHED_OPEN));
+
     if(_actuator_state != _current_actuator_state && millis() - _last_read >= _delay)
     {
         if(_current_actuator_state == FINISHED) //finishing
