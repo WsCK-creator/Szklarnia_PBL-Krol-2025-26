@@ -4,8 +4,8 @@
 
 #include "DataTypes.hpp"
 
-#define V_REF 500
-#define ADC_STEPS 1023
+#define V_REF_L 500.0
+#define ADC_STEPS_L 1023.0
 
 using LightCallback = void (*)(const void*, const unsigned char*);
 
@@ -66,8 +66,8 @@ void Light::update()
 {
     if(millis() - _last_read >= _read_delay)
     {
-        unsigned short value = (analogRead(_ph_pin) / ADC_STEPS) * V_REF;
-        unsigned char val = (value * 100) / V_REF;
+        unsigned short value = ((float)analogRead(_ph_pin) / ADC_STEPS_L) * V_REF_L;
+        unsigned char val = (value * 100) / V_REF_L;
         if(val != _light_level){
             _light_level = val;
             for (const auto& callback : _callbacks)
