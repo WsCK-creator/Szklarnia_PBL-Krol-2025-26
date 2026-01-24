@@ -64,8 +64,6 @@ private:
     double _max = 0;
     double _step = 0;
 
-
-
     const DataConfig* _curentConfig = nullptr;
 
     U8G2_SSD1327_VISIONOX_128X96_1_4W_HW_SPI u8g2;
@@ -306,7 +304,7 @@ void Disp::_screen3_Soil()
     for (unsigned char i = 0; i < 3; i++)
     {
         u8g2.drawFrame(15 + 40 * i, 20, 20, 50); // Ramka
-        int h = (_soil_state[i] <= 250) ? 5 : (_soil_state[i] <= 290) ? 25 : 46; // Wysokość wypełnienia
+        int h = (_soil_state[i] <= SOIL_WET) ? 46 : (_soil_state[i] <= SOIL_MOIST) ? 25 : 5; // Wysokość wypełnienia
         u8g2.drawBox(17 + 40 * i, (70 - h), 16, h);             // Wypełnienie od dołu
         u8g2.setFont(u8g2_font_helvR08_tr);
         u8g2.drawStr(18 + 40 * i, 82, ("CZ " + String(i + 1)).c_str()); // Podpis
@@ -652,7 +650,11 @@ void Disp::_dispScr7()
                 break;
             }
         }
-        _screen7_SimpleEditor(str);
+        u8g2.firstPage();
+        do
+        {
+            _screen7_SimpleEditor(str);
+        } while (u8g2.nextPage());
     }
 }
 
@@ -738,6 +740,7 @@ void Disp::_encPressed()
 {
     _blanking_start = millis();
     u8g2.setContrast(_brightness);
+    _menuIndex = 0;
     if (!_curentItem)
     {
         _screen_num = 6;
@@ -813,7 +816,7 @@ inline void Disp::_setDHTOut(const float *temp, const float *hum)
 
 inline void Disp::_setSoil(const unsigned char *chr, const SoilSensorState *state)
 {
-    _soil_state[*chr - 1] = *state;
+    _soil_state[*chr] = *state;
 }
 
 inline void Disp::_setWater(const unsigned char *level)
@@ -937,7 +940,6 @@ void Disp::update()
         _showScreen();
     }
 }
-
 
 inline unsigned char Disp::brightness(const unsigned char *val)
 {

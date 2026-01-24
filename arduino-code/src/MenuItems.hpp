@@ -92,7 +92,7 @@ extern const MenuItem itemSensorsSoil1;
 extern const MenuItem itemSensorsSoil2;
 extern const MenuItem itemSensorsSoil3;
 
-const MenuItem itemBack = { nullptr, "Powrot", nullptr, nullptr, ID_NONE, 0};
+const MenuItem itemBack = { nullptr, "POWROT", "Powrot", nullptr, ID_NONE, 0};
 
 // --- MANUAL MODE ---
 //const MenuItem itemActuatorDirection = {&itemManualMode, "KIERUNEK", "Kierunek Klapy", nullptr, ACTUATOR_DIRECTION, 0};
