@@ -740,7 +740,6 @@ void Disp::_encPressed()
 {
     _blanking_start = millis();
     u8g2.setContrast(_brightness);
-    _menuIndex = 0;
     if (!_curentItem)
     {
         _screen_num = 6;
