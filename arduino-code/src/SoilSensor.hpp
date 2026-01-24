@@ -5,8 +5,8 @@
 #include "SoilSensorState.hpp"
 #include "DataTypes.hpp"
 
-#define V_REF 500
-#define ADC_STEPS 1023
+#define V_REF 500.0
+#define ADC_STEPS 1023.0
 
 using SoilCallback = void (*)(const void *, const unsigned char *, const SoilSensorState *);
 
@@ -55,15 +55,17 @@ inline void SoilSensor::setEN_Pin(bool state)
 
 inline void SoilSensor::setAndCall(SoilSensorState s)
 {
+    if(_soilState == s) return;
     _soilState = s;
+
     for (const auto &callback : _callbacks)
     {
         callback.second(callback.first, &_id, &_soilState);
     }
-    /*Serial.print("Soil sensor ");
+    Serial.print("Soil sensor ");
     Serial.print(_id);
     Serial.print(" state changed to ");
-    Serial.println(_soilState);*/
+    Serial.println(_soilState);
 }
 
 SoilSensor::SoilSensor(unsigned char enPin, unsigned char sensorPin, unsigned char id)
@@ -113,7 +115,13 @@ void SoilSensor::readSensor()
 {
     if (millis() - _last_read >= _read_delay)
     {
-        short value = (analogRead(_sensorPin) / ADC_STEPS) * V_REF;
+        short value = ((float)analogRead(_sensorPin) / ADC_STEPS) * V_REF;
+        /*Serial.print("Soil sensor ");
+        Serial.print(_id);
+        Serial.print(" read value: ");
+        Serial.print(value);
+        Serial.print(" pin: ");
+        Serial.println(_sensorPin);*/
 
         switch (_soilState)
         {
