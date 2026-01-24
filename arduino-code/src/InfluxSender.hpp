@@ -28,6 +28,7 @@ private:
     int _port;
     const char* _dbName;
     const char* _measurement;
+    const char* _version;
     
     // Timer
     unsigned long _lastSendTime;
@@ -73,7 +74,7 @@ private:
 
 public:
     // Deklaracja Konstruktora
-    InfluxSender(const char* ssid, const char* pass, const char* host, int port, const char* db, const char* measurement, unsigned long logPeriodMs);
+    InfluxSender(const char* ssid, const char* pass, const char* host, int port, const char* db, const char* measurement, unsigned long logPeriodMs, const char* version);
 
     // Deklaracje metod publicznych
     void Init(Stream* wifiSerial, DHTSensor* dhtIn, DHTSensor* dhtOut, SoilSensor* soil1, 
@@ -86,7 +87,7 @@ public:
 // ================================================================
 
 // Konstruktor
-InfluxSender::InfluxSender(const char* ssid, const char* pass, const char* host, int port, const char* db, const char* measurement, unsigned long logPeriodMs){
+InfluxSender::InfluxSender(const char* ssid, const char* pass, const char* host, int port, const char* db, const char* measurement, unsigned long logPeriodMs, const char* version){
     _ssid = ssid;
     _pass = pass;
     _host = host;
@@ -95,6 +96,7 @@ InfluxSender::InfluxSender(const char* ssid, const char* pass, const char* host,
     _measurement = measurement;
     _logPeriod = logPeriodMs;
     _lastSendTime = 0;
+    _version = version;
     
     // Zerowanie zmiennych
     _tempIn = 0.0; _tempOut = 0.0; _humIn = 0.0; _humOut = 0.0;
@@ -172,7 +174,9 @@ void InfluxSender::sendDataToDB() {
         // 1. Budowanie Payload (Line Protocol)
         String payload = "";
         payload += _measurement;
-        payload += ",version=1 "; 
+        payload += ",version=";
+        payload += _version;
+        payload += " ";
         
         payload += DATA_TEMP_IN; payload += "="; payload += String(_tempIn, 2); payload += ",";
         payload += DATA_TEMP_OUT; payload += "="; payload += String(_tempOut, 2); payload += ",";

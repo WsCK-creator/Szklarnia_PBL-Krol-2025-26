@@ -12,6 +12,8 @@
 #include "Disp.hpp"
 #include "InfluxSender.hpp"
 
+#define VERSION "1.0.1"
+
 #define ENCODER_CLK_PIN 3
 #define ENCODER_DT_PIN 34
 #define ENCODER_SW_PIN 2
@@ -54,7 +56,7 @@ virtuabotixRTC myRTC(RTC_CLK, RTC_DAT, RTC_RST);
 Disp disp(OLED_CS, OLED_RES, OLED_DC);
 Light light(LIGHT_SENSOR_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN);
 Processor processor;
-InfluxSender influxSender(INFLUX_SSID, INFLUX_PASSWORD, INFLUX_HOST, INFLUX_PORT, INFLUX_DB_NAME, INFLUX_MEASUREMENT, INFLUX_LOG_PERIOD);
+InfluxSender influxSender(INFLUX_SSID, INFLUX_PASSWORD, INFLUX_HOST, INFLUX_PORT, INFLUX_DB_NAME, INFLUX_MEASUREMENT, INFLUX_LOG_PERIOD, VERSION);
 
 
 void setup() {
@@ -88,3 +90,10 @@ void loop() {
   disp.update();
   influxSender.Update();
 }
+
+/*
+TODO LIST:
+ - Dodać zapisywanie ustawień do EEPROM
+ - Dodać możliwość zmiany czasu
+ - Dodać możliwość ustwanienia czasu w którym działa LED
+*/
