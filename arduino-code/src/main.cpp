@@ -34,18 +34,18 @@
 #define OLED_DC 48
 #define OLED_RES 49
 #define INFLUX_SSID "ssid"
-#define INFLUX_PASSWORD "password"
-#define INFLUX_HOST "192.168.0.100"
+#define INFLUX_PASSWORD "pass"
+#define INFLUX_HOST "192.168.100.98"
 #define INFLUX_PORT 8086
-#define INFLUX_DB_NAME "database_name"
-#define INFLUX_MEASUREMENT "measurement_name"
-#define INFLUX_LOG_PERIOD 10000
+#define INFLUX_DB_NAME "szklarnia"
+#define INFLUX_MEASUREMENT "dane"
+#define INFLUX_LOG_PERIOD 60000
 
 
 Enkoder enkoder(ENCODER_CLK_PIN, ENCODER_DT_PIN, ENCODER_SW_PIN);
-SoilSensor soilSensor1(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_1_PIN, 1);
-SoilSensor soilSensor2(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_2_PIN, 2);
-SoilSensor soilSensor3(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_3_PIN, 3);
+SoilSensor soilSensor1(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_1_PIN, 0);
+SoilSensor soilSensor2(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_2_PIN, 1);
+SoilSensor soilSensor3(SOIL_SENSOR_EN_PIN, SOIL_SENSOR_3_PIN, 2);
 DHTSensor dhtIn(DTH11_IN_PIN);
 DHTSensor dhtOut(DTH11_OUT_PIN);
 WaterLevelSensor waterLevelSensor;
@@ -75,7 +75,6 @@ void setup() {
 }
 
 void loop() {
-  
   enkoder.loop();
   soilSensor1.readSensor();
   soilSensor2.readSensor();
