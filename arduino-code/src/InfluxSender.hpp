@@ -22,8 +22,8 @@
 class InfluxSender {
 private:
     // Konfiguracja sieci i serwera
-    char* _ssid;
-    char* _pass;
+    const char* _ssid;
+    const char* _pass;
     const char* _host;
     int _port;
     const char* _dbName;
@@ -73,7 +73,7 @@ private:
 
 public:
     // Deklaracja Konstruktora
-    InfluxSender(char* ssid, char* pass, const char* host, int port, const char* db, const char* measurement, unsigned long logPeriodMs);
+    InfluxSender(const char* ssid, const char* pass, const char* host, int port, const char* db, const char* measurement, unsigned long logPeriodMs);
 
     // Deklaracje metod publicznych
     void Init(Stream* wifiSerial, DHTSensor* dhtIn, DHTSensor* dhtOut, SoilSensor* soil1, 
@@ -86,7 +86,7 @@ public:
 // ================================================================
 
 // Konstruktor
-InfluxSender::InfluxSender(char* ssid, char* pass, const char* host, int port, const char* db, const char* measurement, unsigned long logPeriodMs) {
+InfluxSender::InfluxSender(const char* ssid, const char* pass, const char* host, int port, const char* db, const char* measurement, unsigned long logPeriodMs){
     _ssid = ssid;
     _pass = pass;
     _host = host;
@@ -195,7 +195,7 @@ void InfluxSender::sendDataToDB() {
         _client.println(_port);
         
         _client.println("Content-Type: text/plain; charset=utf-8");
-        _client.println("Connection: close"); 
+        //_client.println("Connection: close"); 
         
         _client.print("Content-Length: ");
         _client.println(payload.length());
@@ -237,19 +237,13 @@ inline void InfluxSender::_onSoilChanged(const unsigned char* id, const SoilSens
     if(id) {
         switch(*id) {
             case 0: 
-                if(state && *state == SOIL_DRY) _soilHum1 = 33;
-                else if(state && *state == SOIL_WET) _soilHum1 = 0;
-                else _soilHum1 = 66;
+                _soilHum1 = *state;
                 break;
             case 1: 
-                if(state && *state == SOIL_DRY) _soilHum2 = 33;
-                else if(state && *state == SOIL_WET) _soilHum2 = 0;
-                else _soilHum2 = 66;
+                _soilHum2 = *state;
                 break;
             case 2: 
-                if(state && *state == SOIL_DRY) _soilHum3 = 33;
-                else if(state && *state == SOIL_WET) _soilHum3 = 0;
-                else _soilHum3 = 66;
+                _soilHum3 = *state;
                 break;
         }
     }
